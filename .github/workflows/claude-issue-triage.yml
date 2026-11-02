@@ -41,11 +41,10 @@ jobs:
             3. Lista los labels disponibles con `gh label list --repo ${{ github.repository }}`.
                Asigna SOLO labels que ya existan, con `gh issue edit`. Si el evento es `edited`,
                quita los labels que ya no apliquen y agrega los correctos.
-            4. Publica UN solo comentario de diagnóstico. Debe empezar con la línea
-               `<!-- claude-triage -->`. Si ya existe un comentario con ese marcador
-               (revisa con `gh api repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments`),
-               actualízalo con `gh api -X PATCH repos/${{ github.repository }}/issues/comments/<id> -f body=...`
-               en lugar de crear otro.
+            4. Publica UN solo comentario de diagnóstico. Debe empezar con la línea `<!-- claude-triage -->`. 
+               - Revisa si ya existe con: `gh api repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments`
+               - Si NO existe, créalo con: `gh issue comment ${{ github.event.issue.number }} --body "tu_comentario_aqui"`
+               - Si YA existe, actualízalo con: `gh api -X PATCH repos/${{ github.repository }}/issues/comments/<id> -f body="tu_comentario_aqui"`
             5. NO modifiques código, NO crees ramas ni PRs. Solo labels y comentario.
 
             ## Formato del comentario (Markdown, en español)
@@ -84,4 +83,4 @@ jobs:
             Respeta el formato Markdown: headings, listas, bloques de código con lenguaje,
             tablas solo si aportan. Sé preciso y no inventes referencias a código que no hayas leído.
           claude_args: >-
-            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh label list:*),Bash(gh api:*),Read,Grep,Glob"
+            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh label list:*),Bash(gh api:*),Bash(gh issue comment:*),Read,Grep,Glob"
