@@ -40,7 +40,9 @@ const overlayTitle = document.getElementById('overlay-title');
 const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
 
-let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
+let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId, clearingRows, clearTimer;
+
+const CLEAR_DURATION = 450; // ms
 
 function createBoard() {
   return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
@@ -93,23 +95,28 @@ function merge() {
         board[current.y + r][current.x + c] = current.shape[r][c];
 }
 
-function clearLines() {
-  let cleared = 0;
-  for (let r = ROWS - 1; r >= 0; r--) {
-    if (board[r].every(v => v !== 0)) {
-      board.splice(r, 1);
-      board.unshift(new Array(COLS).fill(0));
-      cleared++;
-      r++;
-    }
+function findFullRows() {
+  const rows = [];
+  for (let r = 0; r < ROWS; r++)
+    if (board[r].every(v => v !== 0)) rows.push(r);
+  return rows;
+}
+
+function finishClear() {
+  const cleared = clearingRows.length;
+  // remove from top to bottom so indices stay valid
+  for (const r of [...clearingRows].sort((a, b) => a - b)) {
+    board.splice(r, 1);
+    board.unshift(new Array(COLS).fill(0));
   }
-  if (cleared) {
-    lines += cleared;
-    score += (LINE_SCORES[cleared] || 0) * level;
-    level = Math.floor(lines / 10) + 1;
-    dropInterval = Math.max(100, 1000 - (level - 1) * 90);
-    updateHUD();
-  }
+  clearingRows = [];
+  clearTimer = 0;
+  lines += cleared;
+  score += (LINE_SCORES[cleared] || 0) * level;
+  level = Math.floor(lines / 10) + 1;
+  dropInterval = Math.max(100, 1000 - (level - 1) * 90);
+  updateHUD();
+  spawn();
 }
 
 function ghostY() {
@@ -137,8 +144,13 @@ function softDrop() {
 
 function lockPiece() {
   merge();
-  clearLines();
-  spawn();
+  const full = findFullRows();
+  if (full.length) {
+    clearingRows = full;
+    clearTimer = 0;
+  } else {
+    spawn();
+  }
 }
 
 function spawn() {
@@ -194,6 +206,16 @@ function draw() {
     for (let c = 0; c < COLS; c++)
       drawBlock(ctx, c, r, board[r][c], BLOCK);
 
+  // white blink on completed rows
+  if (clearingRows.length) {
+    const t = Math.min(clearTimer / CLEAR_DURATION, 1);
+    const alpha = Math.abs(Math.sin(t * Math.PI * 3)) * (1 - t * 0.3);
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    for (const r of clearingRows)
+      ctx.fillRect(0, r * BLOCK, COLS * BLOCK, BLOCK);
+    return;
+  }
+
   // ghost
   const gy = ghostY();
   for (let r = 0; r < current.shape.length; r++)
@@ -243,6 +265,15 @@ function togglePause() {
 function loop(ts) {
   const dt = ts - lastTime;
   lastTime = ts;
+  if (clearingRows.length) {
+    clearTimer += dt;
+    if (clearTimer >= CLEAR_DURATION) finishClear();
+    if (!gameOver) {
+      draw();
+      animId = requestAnimationFrame(loop);
+    }
+    return;
+  }
   dropAccum += dt;
   if (dropAccum >= dropInterval) {
     dropAccum = 0;
@@ -263,6 +294,8 @@ function init() {
   level = 1;
   paused = false;
   gameOver = false;
+  clearingRows = [];
+  clearTimer = 0;
   dropInterval = 1000;
   dropAccum = 0;
   lastTime = performance.now();
@@ -276,7 +309,7 @@ function init() {
 
 document.addEventListener('keydown', e => {
   if (e.code === 'KeyP') { togglePause(); return; }
-  if (paused || gameOver) return;
+  if (paused || gameOver || clearingRows.length) return;
   switch (e.code) {
     case 'ArrowLeft':
       if (!collide(current.shape, current.x - 1, current.y)) current.x--;
