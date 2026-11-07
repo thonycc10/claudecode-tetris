@@ -8,6 +8,10 @@
 
   for (let i = 1; i <= 10; i++) sel.add(new Option(i, i));
   sel.value = startLevel;
+  let chosenLevel = startLevel;
+  // Selected level applies only when a new game starts, never mid-game.
+  const origInit = init;
+  init = function () { startLevel = chosenLevel; origInit(); };
 
   function sync() {
     const open = paused && !gameOver;
@@ -31,7 +35,7 @@
     ctlBtn.blur();
   });
   sel.addEventListener('change', () => {
-    startLevel = parseInt(sel.value, 10);
+    chosenLevel = parseInt(sel.value, 10);
     sel.blur();
   });
 
