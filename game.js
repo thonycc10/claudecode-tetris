@@ -202,6 +202,13 @@ function updateHUD() {
 
 function drawBlock(context, x, y, colorIndex, size, alpha) {
   if (!colorIndex) return;
+  // skins.js define activeSkin (se carga después de game.js)
+  if (typeof activeSkin !== 'undefined' && activeSkin) {
+    context.save();
+    activeSkin.drawBlock(context, x, y, colorIndex, size, alpha ?? 1);
+    context.restore();
+    return;
+  }
   const color = COLORS[colorIndex];
   context.globalAlpha = alpha ?? 1;
   context.fillStyle = color;
