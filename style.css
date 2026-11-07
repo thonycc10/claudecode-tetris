@@ -262,3 +262,23 @@ kbd {
 #restart-btn:hover {
   background: var(--btn-bg-hover);
 }
+
+/* ---- Skins ---- */
+.skin-select {
+  background: var(--board-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  width: 100%;
+}
+
+.skin-select:focus-visible {
+  outline: 2px solid var(--value);
+}
+
+#board.skin-neon {
+  background: #000;
+  border-color: #1a1a1a;
+}
