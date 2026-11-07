@@ -262,3 +262,55 @@ kbd {
 #restart-btn:hover {
   background: var(--btn-bg-hover);
 }
+
+/* ---- Skins ---- */
+.skin-select {
+  background: var(--board-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  width: 100%;
+}
+
+.skin-select:focus-visible {
+  outline: 2px solid var(--value);
+}
+
+#board.skin-neon {
+  background: #000;
+  border-color: #1a1a1a;
+}
+
+/* ---- Records ---- */
+#start-title { font-size: 28px; font-weight: 800; letter-spacing: 6px; color: var(--value); }
+#start-overlay { z-index: 20; }
+#start-btn, .rec-btn { background: var(--btn-bg); color: var(--btn-text); border: none; border-radius: 6px; padding: 10px 28px; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; }
+#start-btn:hover, .rec-btn:hover { background: var(--btn-bg-hover); }
+.rec-btn.small { padding: 4px 10px; font-size: 11px; margin-top: 6px; }
+.records-go.hidden { display: none; }
+.records-go, .records-start { font-family: "Courier New", Courier, monospace; font-size: 13px; color: var(--value); text-align: center; }
+.rec-table { border-collapse: collapse; margin: 6px auto; min-width: 220px; }
+.rec-table caption { font-weight: 800; letter-spacing: 2px; margin-bottom: 4px; }
+.rec-table th, .rec-table td { padding: 2px 8px; text-align: left; }
+.rec-table .num { text-align: right; }
+.rec-table tr.rec-hl td { color: #ffd54f; font-weight: 800; }
+.rec-stats { margin: 4px 0; }
+.rec-form { display: flex; gap: 6px; justify-content: center; margin: 6px 0; }
+.rec-form input { width: 130px; padding: 6px; border-radius: 6px; border: 1px solid var(--value); background: transparent; color: var(--value); font-family: inherit; }
+
+/* ---- Pause menu ---- */
+.pause-menu { display: flex; flex-direction: column; gap: 8px; align-items: stretch; margin-top: 8px; min-width: 180px; }
+.pause-menu.hidden, .pm-controls-list.hidden { display: none; }
+.pause-menu button {
+  background: var(--btn-bg); color: var(--btn-text); border: none; border-radius: 6px;
+  padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px;
+  transition: background 0.15s;
+}
+.pause-menu button:hover { background: var(--btn-bg-hover); }
+.pm-controls-list { list-style: none; margin: 0; padding: 0; font-size: 13px; color: var(--value); text-align: left; }
+.pm-controls-list li { margin: 4px 0; }
+.pm-level { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; color: var(--value); }
+.pm-level select { font-size: 14px; padding: 4px 8px; border-radius: 6px; }
+#restart-btn.hidden { display: none; }

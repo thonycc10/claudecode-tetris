@@ -40,6 +40,7 @@ const overlayTitle = document.getElementById('overlay-title');
 const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
 
+let startLevel = 1;
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId, clearingRows, clearTimer;
 
 const CLEAR_DURATION = 450; // ms
@@ -145,8 +146,9 @@ function finishClear() {
   clearTimer = 0;
   lines += cleared;
   score += (LINE_SCORES[cleared] || 0) * level;
-  level = Math.floor(lines / 10) + 1;
+  level = startLevel + Math.floor(lines / 10);
   dropInterval = Math.max(100, 1000 - (level - 1) * 90);
+  window.Records?.onLock(cleared);
   updateHUD();
   spawn();
 }
@@ -181,6 +183,7 @@ function lockPiece() {
     clearingRows = full;
     clearTimer = 0;
   } else {
+    window.Records?.onLock(0);
     spawn();
   }
 }
@@ -202,6 +205,13 @@ function updateHUD() {
 
 function drawBlock(context, x, y, colorIndex, size, alpha) {
   if (!colorIndex) return;
+  // skins.js define activeSkin (se carga después de game.js)
+  if (typeof activeSkin !== 'undefined' && activeSkin) {
+    context.save();
+    activeSkin.drawBlock(context, x, y, colorIndex, size, alpha ?? 1);
+    context.restore();
+    return;
+  }
   const color = COLORS[colorIndex];
   context.globalAlpha = alpha ?? 1;
   context.fillStyle = color;
@@ -278,6 +288,7 @@ function endGame() {
   overlayTitle.textContent = 'GAME OVER';
   overlayScore.textContent = `Puntuación: ${score.toLocaleString()}`;
   overlay.classList.remove('hidden');
+  window.Records?.onGameOver(score, lines);
 }
 
 function togglePause() {
@@ -323,24 +334,25 @@ function init() {
   board = createBoard();
   score = 0;
   lines = 0;
-  level = 1;
+  level = startLevel;
   paused = false;
   gameOver = false;
   clearingRows = [];
   clearTimer = 0;
-  dropInterval = 1000;
+  dropInterval = Math.max(100, 1000 - (level - 1) * 90);
   dropAccum = 0;
   lastTime = performance.now();
   next = randomPiece();
   spawn();
   updateHUD();
   overlay.classList.add('hidden');
+  window.Records?.reset();
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
 }
 
 document.addEventListener('keydown', e => {
-  if (e.code === 'KeyP') { togglePause(); return; }
+  if (e.code === 'KeyP' || e.code === 'Escape') { if (!e.repeat) togglePause(); return; }
   if (paused || gameOver || clearingRows.length) return;
   switch (e.code) {
     case 'ArrowLeft':
@@ -364,7 +376,7 @@ document.addEventListener('keydown', e => {
   updateHUD();
 });
 
-restartBtn.addEventListener('click', init);
+restartBtn.addEventListener('click', () => { restartBtn.blur(); init(); });
 
 themeToggle.addEventListener('click', () => {
   const theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
