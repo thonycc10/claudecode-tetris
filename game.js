@@ -147,6 +147,7 @@ function finishClear() {
   score += (LINE_SCORES[cleared] || 0) * level;
   level = Math.floor(lines / 10) + 1;
   dropInterval = Math.max(100, 1000 - (level - 1) * 90);
+  window.Records?.onLock(cleared);
   updateHUD();
   spawn();
 }
@@ -181,6 +182,7 @@ function lockPiece() {
     clearingRows = full;
     clearTimer = 0;
   } else {
+    window.Records?.onLock(0);
     spawn();
   }
 }
@@ -285,6 +287,7 @@ function endGame() {
   overlayTitle.textContent = 'GAME OVER';
   overlayScore.textContent = `Puntuación: ${score.toLocaleString()}`;
   overlay.classList.remove('hidden');
+  window.Records?.onGameOver(score, lines);
 }
 
 function togglePause() {
@@ -342,6 +345,7 @@ function init() {
   spawn();
   updateHUD();
   overlay.classList.add('hidden');
+  window.Records?.reset();
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
 }
